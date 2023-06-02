@@ -2,11 +2,16 @@ package main
 
 import (
 	"fmt"
-	"net"
+
+	"golang.org/x/net/websocket"
+)
+
+var (
+	port = "8080"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8080")
+	conn, err := websocket.Dial(fmt.Sprintf("ws://localhost:%s", port), "", "http://127.0.0.1:8080")
 	if err != nil {
 		fmt.Println("Error connection:", err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"golang.org/x/net/websocket"
@@ -12,6 +13,7 @@ var (
 )
 
 func handler(ws *websocket.Conn) {
+	fmt.Printf("got a message\n")
 }
 
 func connect(port string) error {
@@ -30,5 +32,7 @@ func connect(port string) error {
 }
 
 func main() {
-	connect(port)
+	if err := connect(port); err != nil {
+		log.Println(err.Error())
+	}
 }
