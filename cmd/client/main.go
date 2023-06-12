@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"golang.org/x/net/websocket"
@@ -32,6 +34,35 @@ func receive(ws *websocket.Conn) {
 	}
 }
 
+func sendMsg(ws *websocket.Conn, text string) error {
+	m := Message{
+		Text:      text,
+		Timestamp: time.Now(),
+		SenderID:  "asdf",
+		Code:      "hi",
+	}
+	err := websocket.JSON.Send(ws, m)
+	return err
+}
+
+func send(ws *websocket.Conn) {
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		text := scanner.Text()
+
+		switch text {
+		case "":
+			continue
+		default:
+			err := sendMsg(ws, text)
+			if err != nil {
+				log.Println("Error sending message: ", err.Error())
+				break
+			}
+		}
+	}
+}
+
 func main() {
 	conn, err := websocket.Dial(fmt.Sprintf("ws://localhost:%s", port), "",
 		"http://127.0.0.1:8080")
@@ -39,9 +70,11 @@ func main() {
 		fmt.Println("Error connection:", err)
 	}
 	defer conn.Close()
+	fmt.Println("Connected to server!")
 
 	// receive
 	go receive(conn)
 
-	fmt.Println("Connected to server!")
+	// send
+	send(conn)
 }
