@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
 	"time"
 
@@ -23,6 +24,21 @@ var (
 	port = "8080"
 )
 
+func generatedIP() string {
+	var arr [4]int
+	for i := 0; i < 4; i++ {
+		rand.Seed(time.Now().UnixNano())
+		arr[i] = rand.Intn(256)
+	}
+	id := fmt.Sprintf("http://%d.%d.%d.%d", arr[0], arr[1], arr[2], arr[3])
+	return id
+}
+
+func connect(port string) (*websocket.Conn, error) {
+	conn, err := websocket.Dial(fmt.Sprintf("ws://localhost:%s", port), "", generatedIP())
+	return conn, err
+}
+
 // Receives message from server
 func receive(ws *websocket.Conn) {
 	var m Message
@@ -35,12 +51,14 @@ func receive(ws *websocket.Conn) {
 }
 
 func sendMsg(ws *websocket.Conn, text string) error {
+	log.Println("enter sendMsg")
 	m := Message{
 		Text:      text,
 		Timestamp: time.Now(),
 		SenderID:  "asdf",
 		Code:      "hi",
 	}
+	log.Println("send m.Text =", m.Text)
 	err := websocket.JSON.Send(ws, m)
 	return err
 }
@@ -49,6 +67,7 @@ func send(ws *websocket.Conn) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
+		log.Println("read from stdin:", text)
 
 		switch text {
 		case "":
@@ -64,8 +83,8 @@ func send(ws *websocket.Conn) {
 }
 
 func main() {
-	conn, err := websocket.Dial(fmt.Sprintf("ws://localhost:%s", port), "",
-		"http://127.0.0.1:8080")
+	// connect
+	conn, err := connect(port)
 	if err != nil {
 		fmt.Println("Error connection:", err)
 	}

@@ -36,13 +36,18 @@ func newRoom() *room {
 		clients:          make(map[string]*websocket.Conn),
 		addClienChan:     make(chan *websocket.Conn),
 		removeClientChan: make(chan *websocket.Conn),
+		broadcastChan:    make(chan Message),
 	}
 }
 
 func (rm *room) addClient(conn *websocket.Conn) {
+	log.Println("New connection", conn.RemoteAddr().String())
+	rm.clients[conn.RemoteAddr().String()] = conn
 }
 
 func (rm *room) removeClient(conn *websocket.Conn) {
+	log.Println("Client disconnected:", conn.RemoteAddr().String())
+	delete(rm.clients, conn.RemoteAddr().String())
 }
 
 func (rm *room) broadcast(m Message) {
@@ -67,7 +72,7 @@ func (rm *room) run() {
 }
 
 func handler(ws *websocket.Conn, rm *room) {
-	fmt.Printf("new client\n")
+	fmt.Printf("new connection\n")
 	go once.Do(rm.run)
 	rm.addClienChan <- ws
 
@@ -75,12 +80,17 @@ func handler(ws *websocket.Conn, rm *room) {
 	for {
 		err := websocket.JSON.Receive(ws, &m)
 
+		log.Println("=============")
+		log.Println("client =", ws.RemoteAddr().String())
+		log.Printf("m.Text = %v\n", m.Text)
 		if err != nil {
 			rm.removeClientChan <- ws
 			return
 		}
 
+		log.Println("11111111111")
 		rm.broadcastChan <- m
+		log.Println("222222222222")
 	}
 }
 
