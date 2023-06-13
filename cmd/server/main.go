@@ -1,9 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
@@ -112,6 +114,15 @@ func connect(port string) error {
 }
 
 func main() {
+	// listen to Ctrl+D
+	go func() {
+		scanner := bufio.NewScanner(os.Stdin)
+		for scanner.Scan() {
+			scanner.Text()
+		}
+		os.Exit(0)
+	}()
+
 	if err := connect(port); err != nil {
 		log.Println(err.Error())
 	}
