@@ -8,16 +8,9 @@ import (
 	"os"
 	"time"
 
-	"golang.org/x/net/websocket"
-)
+	"chat-room/shared"
 
-type (
-	Message struct {
-		Text      string    `json:"text"`
-		Timestamp time.Time `json:"timestamp"`
-		SenderID  string    `json:"senderid"`
-		Code      string    `json:"code"`
-	}
+	"golang.org/x/net/websocket"
 )
 
 var (
@@ -42,7 +35,7 @@ func connect(port string) (*websocket.Conn, error) {
 
 // Receives message from server
 func receive(ws *websocket.Conn) {
-	var m Message
+	var m shared.Message
 	for {
 		if err := websocket.JSON.Receive(ws, &m); err != nil {
 			log.Println("You have disconnected")
@@ -52,7 +45,7 @@ func receive(ws *websocket.Conn) {
 }
 
 func sendMsg(ws *websocket.Conn, text string) error {
-	m := Message{
+	m := shared.Message{
 		Text:      text,
 		Timestamp: time.Now(),
 		SenderID:  id,

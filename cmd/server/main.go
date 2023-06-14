@@ -7,24 +7,18 @@ import (
 	"net/http"
 	"os"
 	"sync"
-	"time"
+
+	"chat-room/shared"
 
 	"golang.org/x/net/websocket"
 )
 
 type (
-	Message struct {
-		Text      string    `json:"text"`
-		Timestamp time.Time `json:"timestamp"`
-		SenderID  string    `json:"senderid"`
-		Code      string    `json:"code"`
-	}
-
 	room struct {
 		clients          map[string]*websocket.Conn
 		addClienChan     chan *websocket.Conn
 		removeClientChan chan *websocket.Conn
-		broadcastChan    chan Message
+		broadcastChan    chan shared.Message
 	}
 )
 
@@ -38,7 +32,7 @@ func newRoom() *room {
 		clients:          make(map[string]*websocket.Conn),
 		addClienChan:     make(chan *websocket.Conn),
 		removeClientChan: make(chan *websocket.Conn),
-		broadcastChan:    make(chan Message),
+		broadcastChan:    make(chan shared.Message),
 	}
 }
 
@@ -52,7 +46,7 @@ func (rm *room) removeClient(conn *websocket.Conn) {
 	delete(rm.clients, conn.RemoteAddr().String())
 }
 
-func (rm *room) broadcast(m Message) {
+func (rm *room) broadcast(m shared.Message) {
 	for _, conn := range rm.clients {
 		if err := websocket.JSON.Send(conn, m); err != nil {
 			log.Println("Error broadcasting")
@@ -78,7 +72,7 @@ func handler(ws *websocket.Conn, rm *room) {
 	go once.Do(rm.run)
 	rm.addClienChan <- ws
 
-	var m Message
+	var m shared.Message
 	for {
 		err := websocket.JSON.Receive(ws, &m)
 
