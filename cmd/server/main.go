@@ -84,15 +84,13 @@ func handler(ws *websocket.Conn, rm *room) {
 
 		log.Println("=============")
 		log.Println("client =", ws.RemoteAddr().String())
-		log.Printf("m.Text = %v\n", m.Text)
+		log.Printf("m.Text = %v\n\n", m.Text)
 		if err != nil {
 			rm.removeClientChan <- ws
 			return
 		}
 
-		log.Println("11111111111")
 		rm.broadcastChan <- m
-		log.Println("222222222222")
 	}
 }
 

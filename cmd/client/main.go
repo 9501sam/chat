@@ -22,6 +22,7 @@ type (
 
 var (
 	port = "8080"
+	id   string
 )
 
 func generatedIP() string {
@@ -30,7 +31,7 @@ func generatedIP() string {
 		rand.Seed(time.Now().UnixNano())
 		arr[i] = rand.Intn(256)
 	}
-	id := fmt.Sprintf("http://%d.%d.%d.%d", arr[0], arr[1], arr[2], arr[3])
+	id = fmt.Sprintf("http://%d.%d.%d.%d", arr[0], arr[1], arr[2], arr[3])
 	return id
 }
 
@@ -51,14 +52,12 @@ func receive(ws *websocket.Conn) {
 }
 
 func sendMsg(ws *websocket.Conn, text string) error {
-	log.Println("enter sendMsg")
 	m := Message{
 		Text:      text,
 		Timestamp: time.Now(),
-		SenderID:  "asdf",
+		SenderID:  id,
 		Code:      "hi",
 	}
-	log.Println("send m.Text =", m.Text)
 	err := websocket.JSON.Send(ws, m)
 	return err
 }
@@ -67,7 +66,6 @@ func send(ws *websocket.Conn) {
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		text := scanner.Text()
-		log.Println("read from stdin:", text)
 
 		switch text {
 		case "":
